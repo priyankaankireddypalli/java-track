@@ -1,0 +1,52 @@
+1)What is Maven? And its Usage?
+Maven is a Build management or project management in java world and makes a life of devops or developer easy.
+It is an build automation tool which compiles the source code, run tests, creates a package,war and deploy to server.
+Maven uses convention over configuration.
+
+Advantage of using Maven?
+a)Inbuilt support for archetypes
+b)common interface for developers
+c)Build
+d)Dependencies
+e)Repositories
+f)Reuse (Plug-ins)
+
+2)How to create a Maven Project?
+
+To create a stand alone Maven project from command line use the following command:
+	mvn archetype:generate -DgroupId=com.priya -DartifactId=mavenproject -DarchetypeArtifactId=maven-archetype-quickstart -DinteractiveMode=false
+
+To create a stand alone or dynamic web project maven project from eclipse follow the steps below
+STEP 1: FILE --> NEW --> MAVEN
+STEP 2: select location --> select the archetype as maven-archetype-quick for standalone project
+				or
+			--> select the archetype as maven-archetype-webapp for dynamic web project
+
+STEP 3: Provide groupId, archefactId, package and click on Finish
+
+3)What are various commands in Maven and its purpose?
+	a) mvn -version : Determines the version of maven present on system.
+	b) mvn install  : It begins running from scratch and builds the project (by downloading all requisite plugins, artifacts on fly and puts them in maven repository)
+	c) mvn clean	: It deletes everything present in target folder
+	d) mvn build    : It builds the maven project
+	e) mvn install -DskipTests : skips the test during maven build
+	f) mvn clean install : first performs clean operation and then install
+
+
+4)Maven Life Cycle and its goals
+	Each phase is associated with one or more goals
+	phase 1) process-resources  
+		 resources:resources
+	phase 2) compile
+		 compiler:compiler
+	phase 3) test
+		 surefire:test
+	phase 4) package
+		 For stand alone application --> jar:jar
+		 For web application 	     --> war:war
+
+
+	
+	
+	
+	

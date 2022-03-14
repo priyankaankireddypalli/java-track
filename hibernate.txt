@@ -1,0 +1,275 @@
+HIbernate tips
+
+Performance tuning - measure before tuning
+
+Zero performance tuning without measuring
+
+In hibernate - Enable and monitor stats in atleast one environment
+#Turn statistics on
+
+spring.jpa.properties.hibernate.generate_statistics = true
+logging.level.org.hinernate.stat=debug
+
+NOT RELATED TO HIBERNATE BUT KNOW THE IMPORTANCE OF INDEXES
+Performance tuning - indexes
+any rdbms needs to have good indexes
+1)add the right indexes on the db
+2)execution plan - look at it
+
+
+ Performance tuning - Use approp caching
+
+first level caching
+second level (enable eh caching) (sepcific nstance of application)
+distributed cache (ditribute load for multiple appl instances ) easle cast
+be careful about the size of FLC - make sure to clear entity manager
+				- searching through it becomes inefficient
+
+Performance tuning : eager v lazy fetch 
+
+depending on situation i.e., evaluate based on evalution 
+
+Performance tuning - Avoid N+1 problem
+
+option 1) make eager fetch
+2)leave entity has a lazy fetch, 
+but make that method consisting of 
+	em.createNamedQuery().setHint("javax.persistence.loadgraph",graph).getResultList();
+
+and create a entity graph
+
+EntityGraph<Course> entityGraph = em.createEntityGraph(Course.class);
+Subgraph<Object> subGraph = entityGraph.addSubgraph("students");
+
+
+"select c from course c JOIN FETCH c.students s)
+
+--------------
+to develop quick web applications using jpa
+while dealing with jpa
+
+always start looking from tables
+1) how do you want to store data into db
+2)what are different tables
+3)what are different relationships
+4)how do i prevent bad data from entering into my db
+5)what are different constraints defined
+
+then you can start thinking about java aplplication to store data into database
+i.e., entities and then define mapping the entities and then their relationships
+
+
+good practices for developing jpa applications
+
+1)fields mut be private
+2)member variables in your components private 
+3)to use in memory database for unit test -- move data.sql to src/test/resources
+4)use assertEquals in testing 
+
+
+
+
+
+
+
+
+SOAP 
+
+1)initialize a spring web services application with spring boot
+dependencies - web services, h2, jpa
+	spring-boot-starter-web-services
+		1)spring-ws-core to develop web services using soap 
+		2)spring-boot-starter
+		3)spring-boot-starter-web
+		4)spring-oxm
+
+
+Overview of creating SOAP web services using contract first approach
+
+1)create a format for request and response
+2)define service : XMl of request and response,XSD(XML SCHEMA DEFINITION)
+3)WEB SERVICE PROVIDER
+
+--------------------------------------------------------
+SERVICE DEFINITION:
+1)XMl
+a)DEFINE REQUEST STRUCTUTURE
+
+b)DEFINE RESPONSE STRUCTURE
+
+3)DEFINE A XSD : how your response and request should look like, valid values
+
+4)GENERATE THE WSDL : by configuring spring web services framework to generate it.
+
+----------------------------------------------------------
+XML JAVA BINDING : JAXB maven plug in - java api for xml binding  
+
+----------------------------
+
+FRAMEWORK CONFIGURATIOn 
+END points -  which process the requests(business logic and provides a response back)
+
+WSDL-generation - web service client  to execute a request and takes response
+
+-----------------------------------
+SOAP web service client - wizdler chrome plugin
+
+
+XML STRUCTURE FOR request and response
+
+create a new folder from main project , name it , create a request.xml
+
+xml has a concept of namespace to avoid clashes : makes uniue for my course , xmlns="https://in28minutes.com/courses"
+define response now
+
+define the structure of xml using xsd.(helps to validates if requests are fine or not)
+to create an xsd use file->new->xml schema file
+target namespace in xsd is the one which should be used by the xml which is going to be created (targetnamespace ="https://in28minutes.com/courses",xmlns:tns="https://in28minutes.com/courses")
+
+s
+created a xsd for request.xml
+<element name="GetCourseDetailRequest">
+	<complexType>
+		<sequence>	
+			<element name="id type="integer"></element>
+		</sequence>
+	</complexType>
+
+
+</element> 
+
+
+created a xsd for response.xml
+
+<element name="GetCourseDetailResponse">
+	<complexType>
+		<sequence>	
+			<element name="CourseDetails" type="tns:CourseDetails"></>
+		</>
+	</>
+</>
+
+
+<complexType name="CourseDetails">
+	<sequence>
+		<element name="id" type="integer"/>
+		<element name="name" type="string"/>
+		<<element name="description" type="string"/>
+		
+	</>
+	
+<complexType>
+
+
+----------------make sure to tie the request.xml with xsd schema 
+control namespace
+	xsi:schemaLocation="{namespace} {location}"
+				namespace, xsd
+define xsi 
+
+add xs everywhere : <xs:schema xmlns:xs ="" , for all nodes and for type as well
+-------------------------------------------------
+
+more about xml schema definition and implementing xsd best practices
+
+
+----------------------------------------------
+until now we have defined xsd 
+JAXB
+
+
+XML REQUEST ----> JAXB ---> java objects
+
+XML response <---- JAXB <----- java objects
+
+
+make the xsd file a copy in resources folder of java
+
+
+in pom.xml we need a plug in
+		1) JAXB2 maven plugin
+		2) XSD source folder 
+		3)java object source folder
+	<configuration>
+		<schemaDirectory>${project.basedir}/src/main/resources</>
+		<outputDirectory<${project.basedir}/src/main/java</>
+
+	</>
+		4) clear folder --> false
+----------------------------------
+
+configuring an end point 
+
+// method 
+// input -request  (GetCourseDetailRequest)
+//o/p - response	(GetCourseDetailResponse)
+
+
+@Endpoint at class level - this is an endpoint
+
+@PayloadRoot(namespace="http://in28minutes.com/course,localPart="GetCourseDetailsRequest") for method
+
+
+@RequestPayload - comes to us has a requesst(to map from xml to  java objects) for method argumets
+
+@ResponsePayload  - java object to be converted back to xml for method
+
+
+customer needs wsdl 
+
+
+
+---------------------------
+spring web services config  - message dispatcher servlet
+//enable spring web services - @EnableWs
+//spring config - @Configuration
+
+//messagedispatcher servlet typically acts as front controller and controlls the request specific to web appl
+//also it can identify end points specific to soap services
+
+
+//ApplicationContext
+//url -- /ws/* --> this is where we wanna expose our web services resources
+
+@Bean
+ServletRegistrationBean messageDispatcherServlet(ApplicationContext context){ //(GetCourseDetailRequest)
+	messageDispatcherServlet.setApplicationContext(context); // set application context
+	messageDispatcherServlet.setTransformWsdlLocations(true);
+ 	new ServletRegistrationBean (messageDispatcherServlet,"/ws/*") --> map thismessageDispatcherServlet to the uri
+
+
+ ServletRegistrationBean  - maps servlet to uri
+
+------------------------------------------------------------------
+spring web services config- generating WSDL
+
+spring web services who generates wsdl for us and we dont create wsdl by hand
+
+//course.wsdl - name of wsdl
+expose resources at // /ws/course.wsdl
+
+let spring use the schema already defined in course-details.xsd and generate wsdl - at /ws/course.wsdl
+
+when we configure wsdl , we need to do couple of things 
+//1)Port type(i.e like interface) - CoursePort
+// 2)namespace
+//3)course-details.xsd - is the xsd page we need to create a wsdl
+
+define the schema 
+@Bean
+XsdSchema courseSchema(){
+return new SimpleXsdScheman(new ClassPathResource("course-details.xsd")
+
+now, we have defined schema 
+now use this schema in wsdl
+
+@Bean(name="courses")
+public DefaultWsdl11Definition defaultWsdl11Definition(XsdSchema coursesSchema)
+---------------------------------------------------------------------
+xml request (format)
+xml response (Format)
+xsd (validation of request and response)
+JAXB2 plug in ( binding -- > xml --> objectss, objects-- > xml)
+endpoint (recieves req, process request and sends response back) 
+congiguring the spring web services
+generating the wsdl
